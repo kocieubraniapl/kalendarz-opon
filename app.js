@@ -455,14 +455,14 @@ function openModal(html, onClose) {
   const m = $('#modal');
   $('.modal-box', m).innerHTML = html;
   m.hidden = false;
-  document.body.style.overflow = 'hidden';
+  document.documentElement.classList.add('modal-open');
   modalOnClose = onClose || null;
   m.scrollTop = 0;   // każde okno otwiera się od góry
   $$('[data-close]', m).forEach(b => b.onclick = closeModal);
 }
 function closeModal() {
   $('#modal').hidden = true;
-  document.body.style.overflow = '';
+  document.documentElement.classList.remove('modal-open');
   const fn = modalOnClose; modalOnClose = null;
   if (fn) fn();
   render();
@@ -601,7 +601,10 @@ function openForm(preset = {}, restored = false) {
         <div class="row">
           <div class="field">
             <label for="f-date">Dzień <span class="req">*</span></label>
-            <input id="f-date" type="date" value="${f.date}">
+            <div class="date-row">
+              <input id="f-date" type="date" value="${f.date}">
+              <button class="btn" type="button" id="f-today">Dzisiaj</button>
+            </div>
             <span class="hint" id="date-hint"></span>
           </div>
         </div>
@@ -714,6 +717,7 @@ function openForm(preset = {}, restored = false) {
   renderHours();
 
   $('#f-date').addEventListener('change', e => { f.date = e.target.value; renderHours(); saveDraft(); });
+  $('#f-today').onclick = () => { f.date = todayIso(); $('#f-date').value = f.date; renderHours(); saveDraft(); };
 
   // --- pola tekstowe
   ['plate', 'phone', 'name', 'car', 'tire', 'notes'].forEach(k => {
