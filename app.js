@@ -87,7 +87,10 @@ function focusDate(r = route()) {
   return weekStart(todayIso()) === start ? todayIso() : start;
 }
 
+let signedIn = false;   // kalendarz pokazuje się dopiero po zalogowaniu
+
 function render() {
+  if (!signedIn) return;
   const r = route();
   $$('.tabs [data-tab]').forEach(t => t.classList.toggle('on',
     t.dataset.tab === r.view && (r.view !== 'day' || r.date === todayIso())));
@@ -959,7 +962,6 @@ function seedDemo() {
 }
 
 /* ================= Start ================= */
-if (Store.isNew()) seedDemo();
 $('#fab').onclick = () => {
   const d = Store.draft();
   if (d && formHasData(d)) openForm(d, true); else openForm();
@@ -983,6 +985,62 @@ $('#btn-zoom').onclick = () => {
 };
 setupTabs();
 setupSearch();
-window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
-Store.onChange(() => { if ($('#modal').hidden) render(); });
-render();
+window.addEventListener('hashchange', () => { if (signedIn) { render(); window.scrollTo(0, 0); } });
+Store.onChange(() => { if (signedIn && $('#modal').hidden) render(); });
+
+/* ================= Logowanie ================= */
+const LOGIN_ERRORS = {
+  'auth/invalid-credential': 'Nieprawidłowy e-mail lub hasło',
+  'auth/invalid-login-credentials': 'Nieprawidłowy e-mail lub hasło',
+  'auth/wrong-password': 'Nieprawidłowy e-mail lub hasło',
+  'auth/user-not-found': 'Nieprawidłowy e-mail lub hasło',
+  'auth/invalid-email': 'To nie wygląda na adres e-mail',
+  'auth/too-many-requests': 'Za dużo prób. Odczekaj chwilę i spróbuj ponownie',
+  'auth/network-request-failed': 'Brak internetu – sprawdź połączenie',
+};
+
+$('#login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#login-btn');
+  $('#login-err').textContent = '';
+  btn.disabled = true; btn.textContent = 'Logowanie…';
+  try {
+    await Store.signIn($('#login-email').value.trim(), $('#login-pass').value);
+  } catch (err) {
+    $('#login-err').textContent = LOGIN_ERRORS[err.code] || 'Nie udało się zalogować';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Zaloguj się';
+  }
+});
+$('#btn-logout').onclick = async () => {
+  if (await confirmBox('Wylogować?', 'Aby znów zobaczyć kalendarz, trzeba będzie podać e-mail i hasło.', 'Tak, wyloguj', false)) {
+    setStatsUnlocked(false);
+    Store.signOut();
+  }
+};
+
+Store.start({
+  async onSignedIn() {
+    signedIn = true;
+    $('#login').hidden = true;
+    $('#loading').hidden = true;
+    document.body.classList.remove('logged-out');
+    await Store.seedOnce(seedDemo);
+    render();
+  },
+  onSignedOut() {
+    signedIn = false;
+    if (!$('#modal').hidden) { modalOnClose = null; closeModal(); }
+    $('#app').innerHTML = '';
+    $('#loading').hidden = true;
+    $('#login').hidden = false;
+    $('#login-pass').value = '';
+    document.body.classList.add('logged-out');
+    setTimeout(() => $('#login-email').focus(), 50);
+  },
+  onError(err) {
+    toast(err && err.code === 'permission-denied'
+      ? 'Brak dostępu do bazy – sprawdź reguły Firestore'
+      : 'Nie udało się zapisać zmiany – spróbuj ponownie');
+  },
+});

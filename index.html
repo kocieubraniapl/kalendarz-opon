@@ -6,7 +6,7 @@
   <title>Kalendarz opon</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="logged-out">
   <header class="topbar">
     <div class="brand">
       <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v6M12 15.5v6M2.5 12h6M15.5 12h6" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -29,6 +29,10 @@
       <button id="btn-export" class="icon-btn" title="Pobierz kopię wszystkich wizyt do Excela">
         <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Kopia do Excela</span>
+      </button>
+      <button id="btn-logout" class="icon-btn" title="Wyloguj">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Wyloguj</span>
       </button>
     </div>
   </header>
@@ -53,6 +57,31 @@
 
   <div id="toast" class="toast" hidden></div>
 
+  <div id="login" class="login" hidden>
+    <form class="login-box" id="login-form" autocomplete="on">
+      <div class="login-brand">
+        <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v6M12 15.5v6M2.5 12h6M15.5 12h6" stroke="currentColor" stroke-width="1.6"/></svg>
+        <h1>Kalendarz opon</h1>
+      </div>
+      <div class="field">
+        <label for="login-email">E-mail</label>
+        <input id="login-email" type="email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="login-pass">Hasło</label>
+        <input id="login-pass" type="password" autocomplete="current-password" required>
+      </div>
+      <span class="err" id="login-err"></span>
+      <button class="btn primary" type="submit" id="login-btn">Zaloguj się</button>
+    </form>
+  </div>
+
+  <div id="loading" class="loading">Wczytywanie…</div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="store.js"></script>
   <script src="app.js"></script>
 </body>
